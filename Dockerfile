@@ -1,31 +1,35 @@
-# Start with a base image that has Go installed
-FROM golang:1.20-alpine AS build
+# Use the official Golang image for building the app
+FROM golang:1.20-alpine AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
-# Copy the Go Modules files
-COPY go.mod ./
-COPY go.sum ./
+# Install necessary build tools
+RUN apk add --no-cache gcc musl-dev
 
-# Download Go modules
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download Go dependencies
 RUN go mod download
 
-# Copy the source code
+# Copy the rest of the application
 COPY . .
 
 # Build the Go app
 RUN go build -o main .
 
-# Final stage - Create a smaller image for production
+# Use a smaller image for production
 FROM alpine:latest
+
+# Set the working directory
 WORKDIR /root/
 
-# Copy the built binary from the build stage
-COPY --from=build /app/main .
+# Copy the Go binary from the builder stage
+COPY --from=builder /app/main .
 
-# Expose port 8080 to the outside world
+# Expose port 8080
 EXPOSE 8080
 
-# Command to run the executable
+# Command to run the app
 CMD ["./main"]
