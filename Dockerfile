@@ -4,7 +4,7 @@ FROM golang:1.20-alpine AS builder
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
-# Install necessary build tools
+# Install necessary build tools (optional if needed)
 RUN apk add --no-cache gcc musl-dev
 
 # Copy go mod and sum files
@@ -21,6 +21,9 @@ RUN go build -o main .
 
 # Use a smaller image for production
 FROM alpine:latest
+
+# Install necessary libraries for running the Go app
+RUN apk add --no-cache ca-certificates
 
 # Set the working directory
 WORKDIR /root/
