@@ -1,21 +1,23 @@
-# Use the official Golang image as the base image
-FROM golang:1.19-alpine
+# Use an official Go runtime as a parent image
+FROM golang:1.18-alpine
 
-# Set the working directory inside the container
+# Set the Current Working Directory inside the container
 WORKDIR /app
 
-# Copy go.mod and go.sum to the container, and download dependencies
+# Copy go mod and sum files
 COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
-# Copy the entire application source code to the container
+# Copy the source from the current directory to the working Directory inside the container
 COPY . .
 
-# Build the Go application
-RUN go build -o taskmanager main.go
+# Build the Go app
+RUN go build -o main .
 
-# Expose port 8080 so that the app is accessible
+# Expose port 8080 to the outside world
 EXPOSE 8080
 
-# Run the task manager binary
-CMD ["./taskmanager"]
+# Command to run the executable
+CMD ["./main"]
