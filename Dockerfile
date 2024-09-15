@@ -1,20 +1,28 @@
-# Use an official Go runtime as a parent image
-FROM golang:1.18-alpine
+# Start with a base image that has Go installed
+FROM golang:1.20-alpine AS build
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
-# Copy go mod and sum files
-COPY go.mod go.sum ./
+# Copy the Go Modules files
+COPY go.mod ./
+COPY go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# Download Go modules
 RUN go mod download
 
-# Copy the source from the current directory to the working Directory inside the container
+# Copy the source code
 COPY . .
 
 # Build the Go app
 RUN go build -o main .
+
+# Final stage - Create a smaller image for production
+FROM alpine:latest
+WORKDIR /root/
+
+# Copy the built binary from the build stage
+COPY --from=build /app/main .
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
